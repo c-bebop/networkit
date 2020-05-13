@@ -4,6 +4,9 @@ networkit_add_test(algebraic AlgebraicBFSGTest
 networkit_add_test(algebraic AlgebraicBellmanFordGTest
     algebraic auxiliary distance io)
 
+networkit_add_test(algebraic AlgebraicAPDGTest
+    algebraic auxiliary distance io)
+
 networkit_add_test(algebraic AlgebraicMatchingCoarseningGTest
     algebraic auxiliary coarsening io matching)
 
