@@ -84,6 +84,7 @@ public:
                 }
             }
         }
+
         return Matrix(d_.numberOfRows(), d_.numberOfColumns(), entries);
     }
 
@@ -94,7 +95,7 @@ public:
 
         if (all_nodes_reached(a_))
         {
-            return a_ * 2 - a;
+            return (a_ * 2) - a;
         }
 
         Matrix d_ = apd(a_);
