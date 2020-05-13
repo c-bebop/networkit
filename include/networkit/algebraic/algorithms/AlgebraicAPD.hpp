@@ -15,7 +15,8 @@ namespace NetworKit {
 template<class Matrix>
 class AlgebraicAPD : public Algorithm {
 public:
-    AlgebraicAPD(const Graph& graph) : At(Matrix::adjacencyMatrix(graph, MinPlusSemiring::zero()).transpose())
+    AlgebraicAPD(const Matrix& m)
+    : matrix(m)
     {
         
     }
@@ -26,8 +27,7 @@ public:
     }
 
 private:
-    Graph g;
-    const Matrix At;
+    const Matrix matrix;
 };
 
 } /* namespace NetworKit */
