@@ -40,6 +40,17 @@ TEST_F(AlgebraicAPDGTest, first_test) {
     DenseMatrix dense_matrix(n, n, entries);
 
     AlgebraicAPD<DenseMatrix> apd(dense_matrix);
+    apd.run();
+
+    for (count i = 0; i < apd.distance.numberOfRows(); ++i)
+    {
+        std::cout << "Distance[" << i + 1 << "]: ";
+        for (count j = 0; j < apd.distance.numberOfColumns(); ++j)
+        {
+            std::cout << apd.distance(i, j) << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 } /* namespace NetworKit */
