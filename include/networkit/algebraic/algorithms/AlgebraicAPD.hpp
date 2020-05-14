@@ -105,7 +105,7 @@ public:
 
         if (all_nodes_reached(a_))
         {
-            return (a_ * 2) - a;
+            return a_ * 2 - a;
         }
 
         DenseMatrix const d_ = apd(a_);
