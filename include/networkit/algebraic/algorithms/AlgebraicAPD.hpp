@@ -15,9 +15,8 @@ namespace NetworKit {
 class AlgebraicAPD : public Algorithm {
 public:
     AlgebraicAPD(const Graph& graph)
+    : n(graph.numberOfNodes())
     {
-        node const n = graph.numberOfNodes();
-
         std::vector<double> entries(n * n, 0.);
         
         for (node i = 0; i < n; ++i)
@@ -34,31 +33,32 @@ public:
     void run()
     {
         distance = apd(matrix);
+        hasRun = true;
     }
 
     DenseMatrix the_new_a(DenseMatrix const& a, DenseMatrix const& z)
     {
-        std::vector<double> entries(a.numberOfRows() * a.numberOfColumns(), 0.);
-        for (count i = 0; i < a.numberOfRows(); ++i)
+        std::vector<double> entries(n * n, 0.);
+        for (count i = 0; i < n; ++i)
         {
-            for (count j = 0; j < a.numberOfColumns(); ++j)
+            for (count j = 0; j < n; ++j)
             {
                 if (i != j && (a(i, j) == 1 || z(i, j) > 0))
                 {
-                    entries[i * a.numberOfRows() + j] = 1;
+                    entries[i * n + j] = 1;
                 }
             }
         }
         
-        return DenseMatrix(a.numberOfRows(), a.numberOfColumns(), entries);
+        return DenseMatrix(n, n, entries);
     }
 
     bool all_nodes_reached(DenseMatrix const& a)
     {
         bool reached = true;
-        for (count i = 0; i < a.numberOfRows() && reached; ++i)
+        for (count i = 0; i < n && reached; ++i)
         {
-            for (count j = 0; j < a.numberOfColumns() && reached; ++j)
+            for (count j = 0; j < n && reached; ++j)
             {
                 if (i != j)
                 {
@@ -71,14 +71,14 @@ public:
 
     DenseMatrix make_distance(DenseMatrix const& d_, DenseMatrix const& s, DenseMatrix const& z)
     {
-        std::vector<double> entries(d_.numberOfRows() * d_.numberOfColumns(), 0.);
-        for (count i = 0; i < d_.numberOfRows(); ++i)
+        std::vector<double> entries(n * n, 0.);
+        for (count i = 0; i < n; ++i)
         {
-            for (count j = 0; j < d_.numberOfColumns(); ++j)
+            for (count j = 0; j < n; ++j)
             {
                 if (i != j)
                 {
-                    entries[i * d_.numberOfRows() + j] = [&]() {
+                    entries[i * n + j] = [&]() {
                         if (s(i, j) >= (d_(i, j) * z(i, i)))
                         {
                             return 2 * d_(i, j);
@@ -95,7 +95,7 @@ public:
             }
         }
 
-        return DenseMatrix(d_.numberOfRows(), d_.numberOfColumns(), entries);
+        return DenseMatrix(n, n, entries);
     }
 
     DenseMatrix apd(DenseMatrix const& a)
@@ -117,6 +117,7 @@ public:
     DenseMatrix distance;
 private:
     DenseMatrix matrix;
+    node const n;
 };
 
 } /* namespace NetworKit */
