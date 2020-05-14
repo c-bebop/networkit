@@ -21,7 +21,7 @@ protected:
 
 TEST_F(AlgebraicAPDGTest, first_test) {
     KONECTGraphReader reader;
-    Graph graph = reader.read("/Users/vivid/HU/GALA/networkit_fork_rep/input/out.moreno_lesmis_lesmis");
+    Graph graph = reader.read("input/out.moreno_lesmis_lesmis");
     std::cout << "graph has " << graph.numberOfNodes() << " nodes and " << graph.numberOfEdges() 
               << " edges and directed? " << graph.isDirected() << std::endl;
 
