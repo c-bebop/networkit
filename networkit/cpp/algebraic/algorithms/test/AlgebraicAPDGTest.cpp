@@ -18,7 +18,8 @@ protected:
     std::vector<double> classicBF(const Graph& graph, node s) const;
 };
 
-TEST_F(AlgebraicAPDGTest, homework) {
+TEST_F(AlgebraicAPDGTest, homework) 
+{
     KONECTGraphReader reader;
     Graph graph = reader.read("input/out.moreno_lesmis_lesmis");
     std::cout << "graph has " << graph.numberOfNodes() << " nodes and " << graph.numberOfEdges() 
@@ -40,8 +41,8 @@ TEST_F(AlgebraicAPDGTest, homework) {
     }
 }
 
-TEST_F(AlgebraicAPDGTest, is_correct) {
-
+TEST_F(AlgebraicAPDGTest, small_example) 
+{
     Graph graph(5);
     graph.addEdge(0, 1);
     graph.addEdge(0, 3);
