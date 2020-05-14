@@ -4,7 +4,7 @@
 
 #include <networkit/base/Algorithm.hpp>
 #include <networkit/graph/Graph.hpp>
-#include <networkit/algebraic/GraphBLAS.hpp>
+#include <networkit/algebraic/DenseMatrix.hpp>
 
 namespace NetworKit {
 
@@ -12,13 +12,23 @@ namespace NetworKit {
  * @ingroup algebraic
  * Implementation of the Bellman-Ford algorithm using the GraphBLAS interface.
  */
-template<class Matrix>
 class AlgebraicAPD : public Algorithm {
 public:
-    AlgebraicAPD(const Matrix& m)
-    : matrix(m)
+    AlgebraicAPD(const Graph& graph)
     {
+        node const n = graph.numberOfNodes();
+
+        std::vector<double> entries(n * n, 0.);
         
+        for (node i = 0; i < n; ++i)
+        {
+            for (node j = 0; j < n; ++j)
+            {
+                entries[i * n + j] = graph.hasEdge(i, j) ? 1. : 0.;
+            }
+        }
+
+        matrix = DenseMatrix(n, n, entries);
     }
 
     void run()
@@ -26,7 +36,7 @@ public:
         distance = apd(matrix);
     }
 
-    Matrix the_new_a(Matrix const& a, Matrix const& z)
+    DenseMatrix the_new_a(DenseMatrix const& a, DenseMatrix const& z)
     {
         std::vector<double> entries(a.numberOfRows() * a.numberOfColumns(), 0.);
         for (count i = 0; i < a.numberOfRows(); ++i)
@@ -40,10 +50,10 @@ public:
             }
         }
         
-        return Matrix(a.numberOfRows(), a.numberOfColumns(), entries);
+        return DenseMatrix(a.numberOfRows(), a.numberOfColumns(), entries);
     }
 
-    bool all_nodes_reached(Matrix const& a)
+    bool all_nodes_reached(DenseMatrix const& a)
     {
         bool reached = true;
         for (count i = 0; i < a.numberOfRows() && reached; ++i)
@@ -59,7 +69,7 @@ public:
         return reached;
     }
 
-    Matrix make_distance(Matrix const& d_, Matrix const& s, Matrix const& z)
+    DenseMatrix make_distance(DenseMatrix const& d_, DenseMatrix const& s, DenseMatrix const& z)
     {
         std::vector<double> entries(d_.numberOfRows() * d_.numberOfColumns(), 0.);
         for (count i = 0; i < d_.numberOfRows(); ++i)
@@ -85,28 +95,28 @@ public:
             }
         }
 
-        return Matrix(d_.numberOfRows(), d_.numberOfColumns(), entries);
+        return DenseMatrix(d_.numberOfRows(), d_.numberOfColumns(), entries);
     }
 
-    Matrix apd(Matrix const& a)
+    DenseMatrix apd(DenseMatrix const& a)
     {
-        Matrix const z = a * a;
-        Matrix const a_ = the_new_a(a, z);
+        DenseMatrix const z = a * a;
+        DenseMatrix const a_ = the_new_a(a, z);
 
         if (all_nodes_reached(a_))
         {
             return (a_ * 2) - a;
         }
 
-        Matrix const d_ = apd(a_);
-        Matrix const s = a * d_;
+        DenseMatrix const d_ = apd(a_);
+        DenseMatrix const s = a * d_;
 
         return make_distance(d_, s, z);
     }
 
-    Matrix distance;
+    DenseMatrix distance;
 private:
-    const Matrix matrix;
+    DenseMatrix matrix;
 };
 
 } /* namespace NetworKit */

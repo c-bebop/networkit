@@ -6,7 +6,6 @@
 #include <networkit/algebraic/CSRMatrix.hpp>
 #include <networkit/graph/Graph.hpp>
 #include <networkit/algebraic/algorithms/AlgebraicAPD.hpp>
-#include <networkit/algebraic/DenseMatrix.hpp>
 
 namespace NetworKit {
 
@@ -25,21 +24,7 @@ TEST_F(AlgebraicAPDGTest, first_test) {
     std::cout << "graph has " << graph.numberOfNodes() << " nodes and " << graph.numberOfEdges() 
               << " edges and directed? " << graph.isDirected() << std::endl;
 
-    node const n = graph.numberOfNodes();
-
-    std::vector<double> entries(n * n, 0.);
-    
-    for (node i = 0; i < n; ++i)
-    {
-        for (node j = 0; j < n; ++j)
-        {
-            entries[i * n + j] = graph.hasEdge(i, j) ? 1. : 0.;
-        }
-    }
-
-    DenseMatrix dense_matrix(n, n, entries);
-
-    AlgebraicAPD<DenseMatrix> apd(dense_matrix);
+    AlgebraicAPD apd(graph);
     apd.run();
 
     for (count i = 0; i < apd.distance.numberOfRows(); ++i)
