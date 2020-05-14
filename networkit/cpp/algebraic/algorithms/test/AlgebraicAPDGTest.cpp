@@ -27,12 +27,14 @@ TEST_F(AlgebraicAPDGTest, first_test) {
     AlgebraicAPD apd(graph);
     apd.run();
 
-    for (count i = 0; i < apd.distance.numberOfRows(); ++i)
+    DenseMatrix distance = apd.getDistance();
+
+    for (count i = 0; i < distance.numberOfRows(); ++i)
     {
         std::cout << "Distance[" << i + 1 << "]: ";
-        for (count j = 0; j < apd.distance.numberOfColumns(); ++j)
+        for (count j = 0; j < distance.numberOfColumns(); ++j)
         {
-            std::cout << apd.distance(i, j) << " ";
+            std::cout << distance(i, j) << " ";
         }
         std::cout << std::endl;
     }

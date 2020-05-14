@@ -36,6 +36,12 @@ public:
         hasRun = true;
     }
 
+    DenseMatrix getDistance()
+    {
+        return distance;
+    }
+
+private:
     DenseMatrix the_new_a(DenseMatrix const& a, DenseMatrix const& z)
     {
         std::vector<double> entries(n * n, 0.);
@@ -114,8 +120,8 @@ public:
         return make_distance(d_, s, z);
     }
 
-    DenseMatrix distance;
 private:
+    DenseMatrix distance;
     DenseMatrix matrix;
     node const n;
 };
