@@ -26,7 +26,7 @@ public:
         distance = apd(matrix);
     }
 
-    Matrix the_new_a(Matrix a, Matrix z)
+    Matrix the_new_a(Matrix const& a, Matrix const& z)
     {
         std::vector<double> entries(a.numberOfRows() * a.numberOfColumns(), 0.);
         for (count i = 0; i < a.numberOfRows(); ++i)
@@ -43,7 +43,7 @@ public:
         return Matrix(a.numberOfRows(), a.numberOfColumns(), entries);
     }
 
-    bool all_nodes_reached(Matrix a)
+    bool all_nodes_reached(Matrix const& a)
     {
         bool reached = true;
         for (count i = 0; i < a.numberOfRows() && reached; ++i)
@@ -59,7 +59,7 @@ public:
         return reached;
     }
 
-    Matrix make_distance(Matrix d_, Matrix s, Matrix z)
+    Matrix make_distance(Matrix const& d_, Matrix const& s, Matrix const& z)
     {
         std::vector<double> entries(d_.numberOfRows() * d_.numberOfColumns(), 0.);
         for (count i = 0; i < d_.numberOfRows(); ++i)
@@ -88,18 +88,18 @@ public:
         return Matrix(d_.numberOfRows(), d_.numberOfColumns(), entries);
     }
 
-    Matrix apd(Matrix a)
+    Matrix apd(Matrix const& a)
     {
-        Matrix z = a * a;
-        Matrix a_ = the_new_a(a, z);
+        Matrix const z = a * a;
+        Matrix const a_ = the_new_a(a, z);
 
         if (all_nodes_reached(a_))
         {
             return (a_ * 2) - a;
         }
 
-        Matrix d_ = apd(a_);
-        Matrix s = a * d_;
+        Matrix const d_ = apd(a_);
+        Matrix const s = a * d_;
 
         return make_distance(d_, s, z);
     }
