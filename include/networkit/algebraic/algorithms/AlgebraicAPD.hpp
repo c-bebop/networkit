@@ -19,11 +19,11 @@ public:
     {
         std::vector<double> entries(n * n, 0.);
         
-        for (node i = 0; i < n; ++i)
+        for (node i = 0; i < n; ++i) // TODO: Use GraphIterators
         {
             for (node j = 0; j < n; ++j)
             {
-                entries[i * n + j] = graph.hasEdge(i, j) ? 1. : 0.;
+                entries[i * n + j] = graph.hasEdge(i, j) ? 1. : 0.; 
             }
         }
 
@@ -51,7 +51,7 @@ private:
             {
                 if (i != j && (a(i, j) == 1 || z(i, j) > 0))
                 {
-                    entries[i * n + j] = 1;
+                    entries[i * n + j] = 1.;
                 }
             }
         }
@@ -90,12 +90,8 @@ private:
                             return 2 * d_(i, j);
                         }
 
-                        if (s(i, j) < (d_(i, j) * z(i, i)))
-                        {
-                            return 2 * d_(i, j) - 1.;
-                        }
-
-                        return 0.;
+                        // if (s(i, j) < (d_(i, j) * z(i, i)))
+                        return 2 * d_(i, j) - 1.;
                     }();
                 }
             }
