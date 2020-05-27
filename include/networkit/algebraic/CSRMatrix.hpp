@@ -295,6 +295,8 @@ public:
      */
     CSRMatrix& operator/=(double divisor);
 
+    CSRMatrix spgemm_spa(CSRMatrix const & other) const;
+
     /**
      * Computes @a A @a binaryOp @a B on the elements of matrix @a A and matrix @a B.
      * @param A Sorted CSRMatrix.

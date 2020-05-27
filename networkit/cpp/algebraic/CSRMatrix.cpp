@@ -421,6 +421,81 @@ CSRMatrix CSRMatrix::operator*(const CSRMatrix &other) const {
     return result;
 }
 
+
+CSRMatrix CSRMatrix::spgemm_spa(CSRMatrix const & other) const
+{
+    assert(nCols == other.nRows);
+
+    std::vector<index> rowIdx(numberOfRows()+1, 0);
+    std::vector<index> columnIdx;
+    std::vector<double> nonZeros;
+
+#pragma omp parallel
+    {
+        std::vector<int64_t> marker(other.numberOfColumns(), -1);
+        count numThreads = omp_get_num_threads();
+        index threadId = omp_get_thread_num();
+
+        count chunkSize = (numberOfRows() + numThreads - 1) / numThreads;
+        index chunkStart = threadId * chunkSize;
+        index chunkEnd = std::min(numberOfRows(), chunkStart + chunkSize);
+
+        for (index i = chunkStart; i < chunkEnd; ++i) {
+            for (index jA = this->rowIdx[i]; jA < this->rowIdx[i+1]; ++jA) {
+                index k = this->columnIdx[jA];
+                for (index jB = other.rowIdx[k]; jB < other.rowIdx[k+1]; ++jB) {
+                    index j = other.columnIdx[jB];
+                    if (marker[j] != (int64_t) i) {
+                        marker[j] = i;
+                        ++rowIdx[i+1];
+                    }
+                }
+            }
+        }
+
+        std::fill(marker.begin(), marker.end(), -1);
+
+#pragma omp barrier
+#pragma omp single
+        {
+            for (index i = 0; i < numberOfRows(); ++i) {
+                rowIdx[i+1] += rowIdx[i];
+            }
+
+            columnIdx = std::vector<index>(rowIdx[numberOfRows()]);
+            nonZeros = std::vector<double>(rowIdx[numberOfRows()]);
+        }
+
+        for (index i = chunkStart; i < chunkEnd; ++i) {
+            index rowBegin = rowIdx[i];
+            index rowEnd = rowBegin;
+
+            for (index jA = this->rowIdx[i]; jA < this->rowIdx[i+1]; ++jA) {
+                index k = this->columnIdx[jA];
+                double valA = this->nonZeros[jA];
+
+                for (index jB = other.rowIdx[k]; jB < other.rowIdx[k+1]; ++jB) {
+                    index j = other.columnIdx[jB];
+                    double valB = other.nonZeros[jB];
+
+                    if (marker[j] < (int64_t) rowBegin) {
+                        marker[j] = rowEnd;
+                        columnIdx[rowEnd] = j;
+                        nonZeros[rowEnd] = valA * valB;
+                        ++rowEnd;
+                    } else {
+                        nonZeros[marker[j]] += valA * valB;
+                    }
+                }
+            }
+        }
+    }
+
+    CSRMatrix result(numberOfRows(), other.numberOfColumns(), rowIdx, columnIdx, nonZeros);
+    if (sorted() && other.sorted()) result.sort();
+    return result;
+}
+
 CSRMatrix CSRMatrix::operator/(double divisor) const {
     return CSRMatrix(*this) /= divisor;
 }
