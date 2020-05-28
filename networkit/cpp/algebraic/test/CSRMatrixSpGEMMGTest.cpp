@@ -9,6 +9,9 @@
 #include <networkit/algebraic/DenseMatrix.hpp>
 #include <networkit/algebraic/DynamicMatrix.hpp>
 
+#include <networkit/algebraic/SPA.hpp>
+#include <memory>
+
 namespace NetworKit {
 
 class CSRMatrixSpGEMMGTest : public testing::Test {
@@ -16,6 +19,41 @@ public:
     CSRMatrixSpGEMMGTest() = default;
     virtual ~CSRMatrixSpGEMMGTest() = default;
 };
+
+
+TEST_F(CSRMatrixSpGEMMGTest, SPA_reset)
+{
+    SPAGala spa(10);
+    
+    spa.accumulate(1, 1.);
+
+    ASSERT_EQ(1u, spa.nnz());
+
+    spa.reset();
+
+    ASSERT_EQ(0u, spa.nnz());
+}
+TEST_F(CSRMatrixSpGEMMGTest, SPA_output)
+{
+    SPAGala spa(10);
+    
+    spa.accumulate(1, 1.);
+    spa.accumulate(3, 3.);
+    spa.accumulate(5, 5.);
+
+    EXPECT_EQ(3u, spa.nnz());
+
+    std::vector<std::pair<size_t, double>> row = spa.output();
+
+    EXPECT_EQ(row[0].first, 1); 
+    EXPECT_EQ(row[0].second, 1.); 
+
+    EXPECT_EQ(row[1].first, 3); 
+    EXPECT_EQ(row[1].second, 3.); 
+
+    EXPECT_EQ(row[2].first, 5); 
+    EXPECT_EQ(row[2].second, 5.); 
+}
 
 TEST_F(CSRMatrixSpGEMMGTest, test)
 {
