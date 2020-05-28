@@ -79,7 +79,7 @@ TEST_F(CSRMatrixSpGEMMGTest, test)
     // result = 12  6  19  -7
     //			-3  0  -7  17
     //
-    CSRMatrix result = mat1 * mat2;
+    CSRMatrix result = mat1.spgemm_spa(mat2);
     ASSERT_EQ(mat1.numberOfRows(), result.numberOfRows());
     ASSERT_EQ(mat1.numberOfColumns(), result.numberOfColumns());
 
