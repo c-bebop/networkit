@@ -3,85 +3,78 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <list>
+#include <stdexcept>
+#include <string>
 
 #include <networkit/Globals.hpp>
 
 namespace NetworKit {
 
-class SPAGala
+class SPA
 {
 public:
-    SPAGala(size_t size)
-    : b(size, false)
+    SPA(size_t size)
+    : occupied_b(size, false)
+    , values_w(size, 0.)
     {
 
     }
 
-    ~SPAGala() = default;
+    ~SPA() = default;
 
     void accumulate(size_t const pos, double const value)
     {
-        if (pos >= b.size())
+        if (pos >= occupied_b.size())
         {
-            return;
+            throw std::out_of_range("Position " + std::to_string(pos) + " does not exist!");
         }
 
-        auto it = std::find(ls.begin(), ls.end(), pos);
-
-        if (b[pos])
+        if (occupied_b[pos])
         {
-            auto index = std::distance(ls.begin(), it);
-            w[index] += value;
+            values_w[pos] += value;
         } 
         else
         {
-            b[pos] = true;
-
-            if (it == std::end(ls))
-            {
-                ls.push_back(pos);
-                w.push_back(value);
-            }
-            else
-            {
-                auto index = std::distance(ls.begin(), it);
-                w[index] = value;
-            }
+            occupied_b[pos] = true;
+            values_w[pos] = value;
+            non_zeros_ls.push_back(pos);
         }
     }
 
-    std::vector<std::pair<size_t, double>> output()
+    size_t output(std::vector<index>& columnIdx, std::vector<double>& values, size_t const nzcur)
     {
-        std::vector<std::pair<size_t, double>> out;
+        size_t non_zero_count = 0;
 
-        for (size_t i = 0; i < ls.size(); ++i)
+        for (auto& e : non_zeros_ls) 
         {
-            std::pair<size_t, double> entry;
-            entry.first = ls[i];
-            entry.second = w[i];
-
-            out.emplace_back(std::move(entry));
+            columnIdx[nzcur + non_zero_count] = e;
+            values[nzcur + non_zero_count] = values_w[e];
+            ++non_zero_count;
         }
 
-        return out;
+        return non_zero_count;
     }
 
     size_t nnz() const 
     {
-        return ls.size();
+        return non_zeros_ls.size();
     }
 
     void reset()
     {
-        std::for_each(std::begin(b), std::end(b), [](std::vector<bool>::reference x) { x = false; } );
-        std::for_each(std::begin(w), std::end(w), [](double& x) { x = 0.; } ); // problem with output when resetting
-        ls.clear();
+        std::for_each(std::begin(non_zeros_ls), std::end(non_zeros_ls), [this](size_t i)
+        { 
+            occupied_b[i] = false; 
+        });
+
+        non_zeros_ls.clear();
     }
 
 private:
-    std::vector<bool> b;
-    std::vector<size_t> ls;
-    std::vector<double> w;
+    std::vector<bool> occupied_b;
+    std::vector<double> values_w;
+    std::vector<size_t> non_zeros_ls;
 };
 
 } /* namespace NetworKit */

@@ -23,7 +23,7 @@ public:
 
 TEST_F(CSRMatrixSpGEMMGTest, SPA_reset)
 {
-    SPAGala spa(10);
+    SPA spa(10);
     
     spa.accumulate(1, 1.);
 
@@ -33,29 +33,71 @@ TEST_F(CSRMatrixSpGEMMGTest, SPA_reset)
 
     ASSERT_EQ(0u, spa.nnz());
 }
+
 TEST_F(CSRMatrixSpGEMMGTest, SPA_output)
 {
-    SPAGala spa(10);
+    std::vector<Triplet> triplets = {{0,0,1}, {0,1,2}, {0,2,3}, {1,0,2}, {1,1,2}, {2,0,3}, {2,2,3}, {2,3,-1}, {3,2,-1}, {3,3,4}};
+
+    //
+    //				 1  2  3  0
+    // 				 2  2  0  0
+    // mat1 = mat2 = 3  0  3 -1
+    //				 0  0 -1  4
+    //
+    CSRMatrix expected(4, triplets);
+    ASSERT_EQ(4u, expected.numberOfRows());
+    ASSERT_EQ(4u, expected.numberOfColumns());
+
+    SPA spa(expected.numberOfColumns());
+
+    //				 1  2  3  0
+    spa.accumulate(0, 1.);
+    spa.accumulate(1, 2.);
+    spa.accumulate(2, 3.);
+
+    std::vector<index> rowIdx(expected.numberOfRows() + 1, 0);
+    std::vector<index> columnIdx;
+    std::vector<double> nonZeros;
+
+    size_t nnz = spa.output(columnIdx, nonZeros, 0);
+    EXPECT_EQ(3, nnz);
+    rowIdx[1] = nnz;
+    spa.reset();
+
+    // 				 2  2  0  0
+    spa.accumulate(0, 2.);
+    spa.accumulate(1, 2.);
+
+    nnz = spa.output(columnIdx, nonZeros, rowIdx[1]);
+    EXPECT_EQ(2, nnz);
+    rowIdx[2] = nnz;
+    spa.reset();
+
+    //               3  0  3 -1
+    spa.accumulate(0, 3.);
+    spa.accumulate(2, 3.);
+    spa.accumulate(3, -1.);
+
+    nnz = spa.output(columnIdx, nonZeros, rowIdx[2]);
+    EXPECT_EQ(3, nnz);
+    rowIdx[3] = nnz;
+    spa.reset();
     
-    spa.accumulate(1, 1.);
-    spa.accumulate(3, 3.);
-    spa.accumulate(5, 5.);
+    //				 0  0 -1  4
+    spa.accumulate(2, -1.);
+    spa.accumulate(3, 4.);
 
-    EXPECT_EQ(3u, spa.nnz());
+    nnz = spa.output(columnIdx, nonZeros, rowIdx[3]);
+    EXPECT_EQ(2, nnz);
+    rowIdx[4] = nnz;
+    spa.reset();
+    
+    CSRMatrix result(4, 4, rowIdx, columnIdx, nonZeros);
 
-    std::vector<std::pair<size_t, double>> row = spa.output();
-
-    EXPECT_EQ(row[0].first, 1); 
-    EXPECT_EQ(row[0].second, 1.); 
-
-    EXPECT_EQ(row[1].first, 3); 
-    EXPECT_EQ(row[1].second, 3.); 
-
-    EXPECT_EQ(row[2].first, 5); 
-    EXPECT_EQ(row[2].second, 5.); 
+    EXPECT_TRUE(expected == result);
 }
 
-TEST_F(CSRMatrixSpGEMMGTest, test)
+TEST_F(CSRMatrixSpGEMMGTest, test_disabled)
 {
     std::vector<Triplet> triplets = {{0,0,1}, {0,1,2}, {0,2,3}, {1,0,2}, {1,1,2}, {2,0,3}, {2,2,3}, {2,3,-1}, {3,2,-1}, {3,3,4}};
 
