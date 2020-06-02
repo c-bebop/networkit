@@ -9,12 +9,13 @@
 #include <networkit/algebraic/DenseMatrix.hpp>
 #include <networkit/algebraic/DynamicMatrix.hpp>
 
+#include <chrono>
 #include <networkit/algebraic/SPA.hpp>
 #include <memory>
 
 namespace NetworKit {
 
-inline void pmatrix(CSRMatrix const& m)
+inline void printmatrix(CSRMatrix const& m)
 {
     for (int i = 0; i < m.numberOfRows(); ++i)
     {
@@ -165,6 +166,22 @@ TEST_F(CSRMatrixSpGEMMGTest, SpGEMM_SPA_airfoil)
 {
     METISGraphReader reader;
     Graph G = reader.read("input/airfoil1.graph");
+
+    CSRMatrix A = CSRMatrix::adjacencyMatrix(G);
+
+    auto spa_timer_begin = std::chrono::high_resolution_clock::now();
+    CSRMatrix AA = A.spgemm_spa(A);
+    auto spa_timer_end = std::chrono::high_resolution_clock::now();
+
+    std::cout << "SPGEMM SPA time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(spa_timer_end - spa_timer_begin).count() << " ns" << std::endl;
+
+    auto mm_timer_begin = std::chrono::high_resolution_clock::now();
+    CSRMatrix AA_mm = A * A;
+    auto mm_timer_end = std::chrono::high_resolution_clock::now();
+
+    std::cout << "MM time:         " << std::chrono::duration_cast<std::chrono::nanoseconds>(mm_timer_end - mm_timer_begin).count() << " ns" << std::endl;
+
+    EXPECT_TRUE(AA_mm == AA);
 }
 
 
