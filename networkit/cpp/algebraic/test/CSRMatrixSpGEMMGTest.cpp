@@ -12,7 +12,22 @@
 #include <networkit/algebraic/SPA.hpp>
 #include <memory>
 
+
+
 namespace NetworKit {
+
+inline void pmatrix(CSRMatrix const& m)
+{
+    for (int i = 0; i < m.numberOfRows(); ++i)
+    {
+        for (int j = 0; j < m.numberOfColumns(); ++j)
+        {
+            std::cout << m(i, j);
+        }
+
+        std::cout << std::endl;
+    }
+}
 
 class CSRMatrixSpGEMMGTest : public testing::Test {
 public:
@@ -50,54 +65,68 @@ TEST_F(CSRMatrixSpGEMMGTest, SPA_output)
 
     SPA spa(expected.numberOfColumns());
 
-    //				 1  2  3  0
-    spa.accumulate(0, 1.);
-    spa.accumulate(1, 2.);
-    spa.accumulate(2, 3.);
-
     std::vector<index> rowIdx(expected.numberOfRows() + 1, 0);
     std::vector<index> columnIdx;
     std::vector<double> nonZeros;
 
-    size_t nnz = spa.output(columnIdx, nonZeros, 0);
+    //				 1  2  3  0
+    spa.accumulate(1., 0);
+    spa.accumulate(2., 1);
+    spa.accumulate(3., 2);
+
+    size_t nnz = spa.output(nonZeros, columnIdx, 0);
     EXPECT_EQ(3, nnz);
-    rowIdx[1] = nnz;
+    size_t current_nnz = nnz;
+    rowIdx[1] = current_nnz;
     spa.reset();
 
     // 				 2  2  0  0
-    spa.accumulate(0, 2.);
-    spa.accumulate(1, 2.);
+    spa.accumulate(2., 0);
+    spa.accumulate(2., 1);
 
-    nnz = spa.output(columnIdx, nonZeros, rowIdx[1]);
+    nnz = spa.output(nonZeros, columnIdx, nonZeros.size());
     EXPECT_EQ(2, nnz);
-    rowIdx[2] = nnz;
+    current_nnz += nnz;
+    rowIdx[2] = current_nnz;
     spa.reset();
 
-    //               3  0  3 -1
-    spa.accumulate(0, 3.);
-    spa.accumulate(2, 3.);
-    spa.accumulate(3, -1.);
+    std::cout << "nonZeros: ";
+    for (auto e : nonZeros)
+    {
+        std::cout << "[" << e << "]";
+    }
+    std::cout << std::endl;
+    
 
-    nnz = spa.output(columnIdx, nonZeros, rowIdx[2]);
+    //               3  0  3 -1
+    spa.accumulate(3., 0);
+    spa.accumulate(3., 2);
+    spa.accumulate(-1., 3);
+
+    nnz = spa.output(nonZeros, columnIdx, nonZeros.size());
     EXPECT_EQ(3, nnz);
-    rowIdx[3] = nnz;
+    current_nnz += nnz;
+    rowIdx[3] = current_nnz;
     spa.reset();
     
     //				 0  0 -1  4
-    spa.accumulate(2, -1.);
-    spa.accumulate(3, 4.);
+    spa.accumulate(-1., 2);
+    spa.accumulate(4., 3);
 
-    nnz = spa.output(columnIdx, nonZeros, rowIdx[3]);
+    nnz = spa.output(nonZeros, columnIdx, nonZeros.size());
     EXPECT_EQ(2, nnz);
-    rowIdx[4] = nnz;
+    current_nnz += nnz;
+    rowIdx[4] = current_nnz;
     spa.reset();
     
     CSRMatrix result(4, 4, rowIdx, columnIdx, nonZeros);
 
+
+
     EXPECT_TRUE(expected == result);
 }
 
-TEST_F(CSRMatrixSpGEMMGTest, test_disabled)
+TEST_F(CSRMatrixSpGEMMGTest, test)
 {
     std::vector<Triplet> triplets = {{0,0,1}, {0,1,2}, {0,2,3}, {1,0,2}, {1,1,2}, {2,0,3}, {2,2,3}, {2,3,-1}, {3,2,-1}, {3,3,4}};
 
@@ -124,6 +153,8 @@ TEST_F(CSRMatrixSpGEMMGTest, test_disabled)
     CSRMatrix result = mat1.spgemm_spa(mat2);
     ASSERT_EQ(mat1.numberOfRows(), result.numberOfRows());
     ASSERT_EQ(mat1.numberOfColumns(), result.numberOfColumns());
+
+    pmatrix(result);
 
     EXPECT_EQ(14, result(0,0));
     EXPECT_EQ(6, result(0,1));

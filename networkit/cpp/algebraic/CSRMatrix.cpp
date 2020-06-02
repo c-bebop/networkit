@@ -437,9 +437,12 @@ CSRMatrix CSRMatrix::spgemm_spa(CSRMatrix const & B) const
             for (size_t j = B.rowIdx[this->columnIdx[k]]; j <= B.rowIdx[this->columnIdx[k] + 1] - 1; ++j)
             {
                 double value = this->nonZeros[k] * B.nonZeros[j];
-                spa.accumulate(B.columnIdx[j], value);
+                spa.accumulate(value, B.columnIdx[j]);
             }
         }
+
+        size_t nznew = spa.output(nonZeros, columnIdx, rowIdx[i]);
+        rowIdx[i + 1] = rowIdx[i] + nznew;
 
         spa.reset();
     }
