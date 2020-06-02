@@ -18,7 +18,6 @@ public:
     SPA(size_t size)
     : occupied_b(size, false)
     , values_w(size, 0.)
-    , row(0)
     {
 
     }
@@ -73,8 +72,6 @@ public:
             ++non_zero_count;
         }
 
-        ++row;
-
         return non_zero_count;
     }
 
@@ -109,7 +106,6 @@ private:
     std::vector<bool> occupied_b;
     std::vector<double> values_w;
     std::vector<size_t> non_zeros_ls;
-    size_t row;
 };
 
 } /* namespace NetworKit */
