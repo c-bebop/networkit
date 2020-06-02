@@ -88,7 +88,6 @@ public:
         std::for_each(std::begin(non_zeros_ls), std::end(non_zeros_ls), [this](size_t i)
         { 
             occupied_b[i] = false; 
-            values_w[i] = 0.;
         });
 
         non_zeros_ls.clear();
@@ -96,7 +95,6 @@ public:
 
     void print()
     {
-
         std::cout << "values_w: ";
 
         for (auto e : values_w)
