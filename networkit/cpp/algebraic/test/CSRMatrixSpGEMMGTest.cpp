@@ -161,4 +161,11 @@ TEST_F(CSRMatrixSpGEMMGTest, SpGEMM_SPA_minimal_example)
 }
 
 
+TEST_F(CSRMatrixSpGEMMGTest, SpGEMM_SPA_airfoil)
+{
+    METISGraphReader reader;
+    Graph G = reader.read("input/airfoil1.graph");
+}
+
+
 } /* namespace NetworKit */
