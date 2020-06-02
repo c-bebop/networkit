@@ -12,8 +12,6 @@
 #include <networkit/algebraic/SPA.hpp>
 #include <memory>
 
-
-
 namespace NetworKit {
 
 inline void pmatrix(CSRMatrix const& m)
@@ -90,14 +88,6 @@ TEST_F(CSRMatrixSpGEMMGTest, SPA_output)
     rowIdx[2] = current_nnz;
     spa.reset();
 
-    std::cout << "nonZeros: ";
-    for (auto e : nonZeros)
-    {
-        std::cout << "[" << e << "]";
-    }
-    std::cout << std::endl;
-    
-
     //               3  0  3 -1
     spa.accumulate(3., 0);
     spa.accumulate(3., 2);
@@ -121,12 +111,10 @@ TEST_F(CSRMatrixSpGEMMGTest, SPA_output)
     
     CSRMatrix result(4, 4, rowIdx, columnIdx, nonZeros);
 
-
-
     EXPECT_TRUE(expected == result);
 }
 
-TEST_F(CSRMatrixSpGEMMGTest, test)
+TEST_F(CSRMatrixSpGEMMGTest, SpGEMM_SPA_minimal_example)
 {
     std::vector<Triplet> triplets = {{0,0,1}, {0,1,2}, {0,2,3}, {1,0,2}, {1,1,2}, {2,0,3}, {2,2,3}, {2,3,-1}, {3,2,-1}, {3,3,4}};
 
@@ -153,8 +141,6 @@ TEST_F(CSRMatrixSpGEMMGTest, test)
     CSRMatrix result = mat1.spgemm_spa(mat2);
     ASSERT_EQ(mat1.numberOfRows(), result.numberOfRows());
     ASSERT_EQ(mat1.numberOfColumns(), result.numberOfColumns());
-
-    pmatrix(result);
 
     EXPECT_EQ(14, result(0,0));
     EXPECT_EQ(6, result(0,1));
