@@ -173,13 +173,17 @@ TEST_F(CSRMatrixSpGEMMGTest, SpGEMM_SPA_airfoil)
     CSRMatrix AA = A.spgemm_spa(A);
     auto spa_timer_end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "SPGEMM SPA time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(spa_timer_end - spa_timer_begin).count() << " ns" << std::endl;
+    size_t const spgemm_time = std::chrono::duration_cast<std::chrono::nanoseconds>(spa_timer_end - spa_timer_begin).count();
+    std::cout << "SPGEMM SPA time: " << spgemm_time << " ns" << std::endl;
 
     auto mm_timer_begin = std::chrono::high_resolution_clock::now();
     CSRMatrix AA_mm = A * A;
     auto mm_timer_end = std::chrono::high_resolution_clock::now();
 
-    std::cout << "MM time:         " << std::chrono::duration_cast<std::chrono::nanoseconds>(mm_timer_end - mm_timer_begin).count() << " ns" << std::endl;
+    size_t const mm_time = std::chrono::duration_cast<std::chrono::nanoseconds>(mm_timer_end - mm_timer_begin).count();
+    std::cout << "MM time:         " << mm_time << " ns" << std::endl;
+
+    std::cout << "Factor: " << mm_time / double(spgemm_time) << std::endl;
 
     EXPECT_TRUE(AA_mm == AA);
 }
