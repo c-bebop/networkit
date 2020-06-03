@@ -424,19 +424,28 @@ CSRMatrix CSRMatrix::operator*(const CSRMatrix &other) const {
 
 CSRMatrix CSRMatrix::spgemm_spa(CSRMatrix const & B) const
 {
-    std::vector<index> rowIdx(numberOfRows()+1, 0);
-    std::vector<index> columnIdx;
-    std::vector<double> nonZeros;
+    std::vector<index> rowIdx(numberOfRows() + 1, 0);
+    size_t prealloc = numberOfRows() / 2;
+    std::vector<index> columnIdx(prealloc, 0u);
+    std::vector<double> nonZeros(prealloc, 0.);
 
-    SPA spa(this->numberOfRows());
+    const size_t my_row_count = this->numberOfRows();
+    SPA spa(my_row_count);
 
-    for (size_t i = 0; i < this->numberOfRows(); ++i)
+    for (size_t i = 0; i < my_row_count; ++i)
     {
-        for (size_t k = this->rowIdx[i]; k <= this->rowIdx[i + 1] - 1; ++k)
+
+        size_t const k_start = this->rowIdx[i];
+        size_t const k_end = this->rowIdx[i + 1];
+        for (size_t k = k_start; k < k_end; ++k)
         {
-            for (size_t j = B.rowIdx[this->columnIdx[k]]; j <= B.rowIdx[this->columnIdx[k] + 1] - 1; ++j)
+            
+            size_t const j_start = B.rowIdx[this->columnIdx[k]];
+            size_t const j_end = B.rowIdx[this->columnIdx[k] + 1];
+            double const my_value = this->nonZeros[k];
+            for (size_t j = j_start; j < j_end; ++j)
             {
-                double value = this->nonZeros[k] * B.nonZeros[j];
+                double value = my_value * B.nonZeros[j];
                 spa.accumulate(value, B.columnIdx[j]);
             }
         }
