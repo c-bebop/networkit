@@ -3,6 +3,7 @@ networkit_add_module(algebraic
     DenseMatrix.cpp
     DynamicMatrix.cpp
     Vector.cpp
+    SPA.cpp
     )
 
 
