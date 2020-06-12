@@ -425,12 +425,12 @@ CSRMatrix CSRMatrix::operator*(const CSRMatrix &other) const {
 CSRMatrix CSRMatrix::spgemm_spa(CSRMatrix const & B) const
 {
     std::vector<index> rowIdx(numberOfRows() + 1, 0);
-    size_t prealloc = numberOfRows() / 2;
+    size_t prealloc = this->nnz();
     std::vector<index> columnIdx(prealloc, 0u);
     std::vector<double> nonZeros(prealloc, 0.);
 
     const size_t my_row_count = this->numberOfRows();
-    SPA spa(my_row_count);
+    SPA spa(prealloc / this->numberOfColumns());
 
     for (size_t i = 0; i < my_row_count; ++i)
     {
@@ -439,7 +439,7 @@ CSRMatrix CSRMatrix::spgemm_spa(CSRMatrix const & B) const
         size_t const k_end = this->rowIdx[i + 1];
         for (size_t k = k_start; k < k_end; ++k)
         {
-            
+
             size_t const j_start = B.rowIdx[this->columnIdx[k]];
             size_t const j_end = B.rowIdx[this->columnIdx[k] + 1];
             double const my_value = this->nonZeros[k];
