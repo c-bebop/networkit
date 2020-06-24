@@ -39,6 +39,7 @@
 #include <networkit/generators/ClusteredRandomGraphGenerator.hpp>
 #include <networkit/generators/ErdosRenyiGenerator.hpp>
 #include <networkit/community/CoverF1Similarity.hpp>
+#include <networkit/community/MLC.hpp>
 
 #include <tlx/unused.hpp>
 
@@ -169,8 +170,16 @@ TEST_F(CommunityGTest, testLouvainParallel2Naive) {
 }
 */
 
+TEST_F(CommunityGTest, testMCL)
+{
+    METISGraphReader reader;
+    Modularity modularity;
+    Graph G = reader.read("input/jazz.graph");
 
+    MCL mcl(G);
 
+    mcl.run();
+}
 
 TEST_F(CommunityGTest, testPLM) {
     METISGraphReader reader;
