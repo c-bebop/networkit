@@ -21,23 +21,33 @@ public:
 
     }
 
+    template<class Matrix>
+    Vector columnSum(Matrix const& m)
+    {
+        Vector w(m.numberOfColumns());
+
+        for (size_t i = 0; i < m.numberOfRows(); ++i)
+        {
+            m.forElementsInRow(i, [&](index column, double value) 
+            {
+                w[column] += value;
+            });
+        }
+
+        return w;
+    }
+        
+
     void run() override
     {
+
         // Creating Markov Matrix
         CSRMatrix A = CSRMatrix::adjacencyMatrix(*G);
 
         // Transpose becouse A(i, j) is the weight from j to i to generate the Markov Matrix
         A.transpose();
         
-        Vector v(A.numberOfColumns());
-
-        for (size_t i = 0; i < A.numberOfRows(); ++i)
-        {
-            A.forElementsInRow(i, [&](index column, double value) 
-            {
-                v[column] += value;
-            });
-        }
+        Vector v = columnSum<CSRMatrix>(A);
 
         CSRMatrix D = CSRMatrix::diagonalMatrix(v);
         // invserse D
@@ -58,11 +68,21 @@ public:
             });
         }
 
+        // Actual algorithm
         // expansion
         for (size_t i = 0; i < m_expansion; ++i)
         {
             M = M * M;
         }
+
+        for (size_t i = 0; i < M.numberOfRows(); ++i)
+        {
+            M.forElementsInRow(i, [&](index j, double value) {
+                M.setValue(i, j, M(i, j) * m_inflation);
+            });
+        }
+
+        Vector w = columnSum<DenseMatrix>(M);
     }
 
     std::string toString() const override { return std::string("MLC"); }
