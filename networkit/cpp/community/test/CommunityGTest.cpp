@@ -170,6 +170,33 @@ TEST_F(CommunityGTest, testLouvainParallel2Naive) {
 }
 */
 
+TEST_F(CommunityGTest, mlc_columnNormalize)
+{
+    std::vector<Triplet> triplets = {
+        {0,0,1}, {0,1,5}, {0,2,3}, 
+        {1,0,2}, {1,1,5}, 
+        {2,0,7},          {2,2,3}, {2,3,6}, 
+                          {3,2,4}, {3,3,4}};
+
+    CSRMatrix m(4, triplets);
+
+    normalize(m);
+
+    EXPECT_FLOAT_EQ(0.1, m(0,0));
+    EXPECT_FLOAT_EQ(0.2, m(1,0));
+    EXPECT_FLOAT_EQ(0.7, m(2,0));
+
+    EXPECT_FLOAT_EQ(0.5, m(0,1));
+    EXPECT_FLOAT_EQ(0.5, m(1,1));
+
+    EXPECT_FLOAT_EQ(0.3, m(0,2));
+    EXPECT_FLOAT_EQ(0.3, m(2,2));
+    EXPECT_FLOAT_EQ(0.4, m(3,2));
+
+    EXPECT_FLOAT_EQ(0.6, m(2,3));
+    EXPECT_FLOAT_EQ(0.4, m(3,3));
+}
+
 TEST_F(CommunityGTest, mlc_jazz)
 {
     METISGraphReader reader;

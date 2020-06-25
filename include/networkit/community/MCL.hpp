@@ -11,10 +11,41 @@
 
 namespace NetworKit {
 
+template<class Matrix>
+Vector columnSum(Matrix const& m)
+{
+    Vector w(m.numberOfColumns());
+
+    for (size_t i = 0; i < m.numberOfRows(); ++i)
+    {
+        m.forElementsInRow(i, [&](index column, double value) 
+        {
+            w[column] += value;
+        });
+    }
+
+    return w;
+}
+
+template<class Matrix>
+void normalize(Matrix& m)
+{
+    Vector w = columnSum<Matrix>(m);
+    w.forElements([](double& x) { x = 1. / x; });
+
+    for (size_t i = 0; i < m.numberOfRows(); ++i)
+    {
+        m.forNonZeroElementsInRow(i, [&](index j, double value)
+        {
+            m.setValue(i, j, value * (0.01 / w[j]));
+        });
+    }
+}
+
 class MCL : public CommunityDetectionAlgorithm {
 
 public:
-    MCL(const Graph& G, double delta = 0.01, size_t expansion = 2, double inflation = 1.01)
+    MCL(const Graph& G, double delta = 0.01, size_t expansion = 3, double inflation = 1.5)
     : CommunityDetectionAlgorithm(G)
     , m_delta(delta)
     , m_expansion(expansion)
@@ -29,22 +60,6 @@ public:
         {
             throw std::runtime_error("Inflaction factor must be greater 1.");
         }
-    }
-
-    template<class Matrix>
-    Vector columnSum(Matrix const& m)
-    {
-        Vector w(m.numberOfColumns());
-
-        for (size_t i = 0; i < m.numberOfRows(); ++i)
-        {
-            m.forElementsInRow(i, [&](index column, double value) 
-            {
-                w[column] += value;
-            });
-        }
-
-        return w;
     }
     
     template<class Matrix>
@@ -67,13 +82,24 @@ public:
         return recurse;
     }
 
+    template <typename Matrix>
+    void inflation(Matrix& m, double r)
+    {
+        for (size_t i = 0; i < m.numberOfRows(); ++i)
+        {
+            m.forElementsInRow(i, [&](index j, double value) {
+                m.setValue(i, j, value * r);
+            });
+        }
+    }
+
     template<typename Matrix>
-    Matrix mcl(Matrix& C_i, size_t e, double r)
+    Matrix mcl(Matrix const& M, size_t e, double r)
     {
         bool recurse = false;
 
-        DenseMatrix C_f;
-
+        Matrix C_i = M;
+        Matrix C_f;
         do
         {
             // Actual algorithm
@@ -84,17 +110,11 @@ public:
                 C_f = C_f * C_f;
             }
 
-            // inflation
-            for (size_t i = 0; i < C_f.numberOfRows(); ++i)
-            {
-                C_f.forElementsInRow(i, [&](index j, double value) {
-                    C_f.setValue(i, j, C_f(i, j) * m_inflation);
-                });
-            }
+            inflation(C_f, m_inflation);
 
-            Vector w = columnSum<DenseMatrix>(C_f);
 
             // Normalise Columns
+            Vector w = columnSum<Matrix>(C_f);
             w.forElements([](double& x) { x = 1. / x; });
 
             for (size_t i = 0; i < C_f.numberOfRows(); ++i)
@@ -159,6 +179,7 @@ public:
         {
             if (C_f(i, i) > m_delta)
             {
+                std::cout << "C_f(i, i) > m_delta" << std::endl;
                 C_f.forElementsInRow(i, [&](size_t j, double x)
                 {
                     if (x > m_delta && i != j)
