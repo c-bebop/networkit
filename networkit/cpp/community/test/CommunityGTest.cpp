@@ -185,6 +185,52 @@ TEST_F(CommunityGTest, mlc_jazz)
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
+TEST_F(CommunityGTest, mlc_celegans_metabolic)
+{
+    METISGraphReader reader;
+    Modularity modularity;
+    Graph G = reader.read("input/celegans_metabolic.graph");
+
+    MCL mcl(G);
+    mcl.run();
+    Partition zeta = mcl.getPartition();
+
+    DEBUG("number of clusters: " , zeta.numberOfSubsets());
+    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
+}
+
+
+TEST_F(CommunityGTest, mlc_email)
+{
+    METISGraphReader reader;
+    Modularity modularity;
+    Graph G = reader.read("input/email.graph");
+
+    MCL mcl(G);
+    mcl.run();
+    Partition zeta = mcl.getPartition();
+
+    DEBUG("number of clusters: " , zeta.numberOfSubsets());
+    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
+}
+
+TEST_F(CommunityGTest, mlc_power)
+{
+    METISGraphReader reader;
+    Modularity modularity;
+    Graph G = reader.read("input/power.graph");
+
+    MCL mcl(G);
+    mcl.run();
+    Partition zeta = mcl.getPartition();
+
+    DEBUG("number of clusters: " , zeta.numberOfSubsets());
+    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
+}
+
 TEST_F(CommunityGTest, mlc_PGPgiantcompo)
 {
     METISGraphReader reader;
