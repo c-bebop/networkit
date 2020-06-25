@@ -177,8 +177,20 @@ TEST_F(CommunityGTest, testMCL)
     Graph G = reader.read("input/jazz.graph");
 
     MCL mcl(G);
-
     mcl.run();
+    Partition zeta = mcl.getPartition();
+
+    DEBUG("number of clusters: " , zeta.numberOfSubsets());
+    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
+
+    // PLM plmr(G, true, 1.0);
+    // plmr.run();
+    // Partition zeta2 = plmr.getPartition();
+
+    // DEBUG("number of clusters: " , zeta2.numberOfSubsets());
+    // DEBUG("modularity: " , modularity.getQuality(zeta2, G));
+    // EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta2));
 }
 
 TEST_F(CommunityGTest, testPLM) {

@@ -14,7 +14,7 @@ namespace NetworKit {
 class MCL : public CommunityDetectionAlgorithm {
 
 public:
-    MCL(const Graph& G, double delta = 0.1, size_t expansion = 2, double inflation = 1.01)
+    MCL(const Graph& G, double delta = 0.01, size_t expansion = 2, double inflation = 1.01)
     : CommunityDetectionAlgorithm(G)
     , m_delta(delta)
     , m_expansion(expansion)
@@ -46,15 +46,74 @@ public:
 
         return w;
     }
-        
+    
+    template<class Matrix>
+    bool equals(Matrix const& a, Matrix const& b, double delta)
+    {
+        bool recurse = false;
+
+        for (size_t i = 0; i < a.numberOfRows() && !recurse; ++i)
+        {
+            a.forNonZeroElementsInRow(i, [&](index j, double value)
+            {
+                double const epsilon = std::abs(a(i, j) - b(i, j));
+                if (epsilon > delta)
+                {
+                    recurse = true;
+                }
+            });
+        }
+
+        return recurse;
+    }
+
+    template<typename Matrix>
+    Matrix mlc(Matrix const& C_i, size_t e, double r)
+    {
+        bool recurse = false;
+        do
+        {
+            // Actual algorithm
+            // expansion
+            DenseMatrix C_f = C_i * C_i;
+            for (size_t i = 1; i < e; ++i)
+            {
+                C_f = C_f * C_f;
+            }
+
+            // inflation
+            for (size_t i = 0; i < C_f.numberOfRows(); ++i)
+            {
+                C_f.forElementsInRow(i, [&](index j, double value) {
+                    C_f.setValue(i, j, C_f(i, j) * m_inflation);
+                });
+            }
+
+            Vector w = columnSum<DenseMatrix>(C_f);
+
+            // Normalise Columns
+            w.forElements([](double& x) { x = 1. / x; });
+
+            for (size_t i = 0; i < C_f.numberOfRows(); ++i)
+            {
+                C_f.forNonZeroElementsInRow(i, [&](index j, double value)
+                {
+                    C_f.setValue(i, j, C_f(i, j) * w[j]);
+                });
+            }
+
+            recurse = equals(C_f, C_i, m_delta);
+        } while (recurse);
+
+        return std::move(C_i);
+    }
 
     void run() override
     {
-
         // Creating Markov Matrix
         CSRMatrix A = CSRMatrix::adjacencyMatrix(*G);
 
-        // Transpose becouse A(i, j) is the weight from j to i to generate the Markov Matrix
+        // Transpose because A(i, j) is the weight from j to i to generate the Markov Matrix
         // Maybe not needed? Is that only a detail?!
         A.transpose();
         
@@ -79,46 +138,29 @@ public:
             });
         }
 
-        // Actual algorithm
-        // expansion
-        DenseMatrix C_f = M * M;
-        for (size_t i = 1; i < m_expansion; ++i)
-        {
-            C_f = C_f * C_f;
+        DenseMatrix C_f = mlc(M, m_expansion, m_delta);
+
+        index z = G->upperNodeIdBound();
+        if (result.numberOfElements() != z) {
+            result = Partition(z);
+            result.allToSingletons();
         }
 
-        // inflation
         for (size_t i = 0; i < C_f.numberOfRows(); ++i)
         {
-            C_f.forElementsInRow(i, [&](index j, double value) {
-                C_f.setValue(i, j, C_f(i, j) * m_inflation);
-            });
-        }
-
-        Vector w = columnSum<DenseMatrix>(C_f);
-
-        // Normalise Columns
-        w /= 1.;
-        for (size_t i = 0; i < C_f.numberOfRows(); ++i)
-        {
-            C_f.forNonZeroElementsInRow(i, [&](index j, double value)
+            if (C_f(i, i) > m_delta)
             {
-                C_f.setValue(i, j, C_f(i, j) * w[j]);
-            });
-        }
-
-        bool recurse = false;
-        for (size_t i = 0; i < C_f.numberOfRows() && !recurse; ++i)
-        {
-            C_f.forNonZeroElementsInRow(i, [&](index j, double value)
-            {
-                if (!recurse)
+                C_f.forElementsInRow(i, [&](size_t j, double x)
                 {
-                    double const epsilon = std::abs(C_f(i, j) - M(i, j));
-                    recurse = epsilon > m_delta;
-                }
-            });
+                    if (x > m_delta)
+                    {
+                        result.moveToSubset(j, i);
+                    }
+                });
+            }
         }
+
+        hasRun = true;
     }
 
     std::string toString() const override { return std::string("MLC"); }
@@ -139,7 +181,7 @@ public:
 
 
 private:
-    double m_delta{0.1};
+    double m_delta{0.01};
     size_t m_expansion{2};
     double m_inflation{1.01};
 };
