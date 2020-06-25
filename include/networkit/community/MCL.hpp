@@ -42,10 +42,31 @@ void normalize(Matrix& m)
     }
 }
 
+
+template<class Matrix>
+bool equals(Matrix const& a, Matrix const& b, double delta)
+{
+    bool equal = true;
+
+    for (size_t i = 0; i < a.numberOfRows() && equal; ++i)
+    {
+        a.forNonZeroElementsInRow(i, [&](index j, double value)
+        {
+            double const epsilon = std::abs(a(i, j) - b(i, j));
+            if (epsilon > delta)
+            {
+                equal = false;
+            }
+        });
+    }
+
+    return equal;
+}
+
 class MCL : public CommunityDetectionAlgorithm {
 
 public:
-    MCL(const Graph& G, double delta = 0.01, size_t expansion = 3, double inflation = 1.5)
+    MCL(const Graph& G, double delta = 0.001, size_t expansion = 3, double inflation = 1.5)
     : CommunityDetectionAlgorithm(G)
     , m_delta(delta)
     , m_expansion(expansion)
@@ -60,26 +81,6 @@ public:
         {
             throw std::runtime_error("Inflaction factor must be greater 1.");
         }
-    }
-    
-    template<class Matrix>
-    bool equals(Matrix const& a, Matrix const& b, double delta)
-    {
-        bool recurse = false;
-
-        for (size_t i = 0; i < a.numberOfRows() && !recurse; ++i)
-        {
-            a.forNonZeroElementsInRow(i, [&](index j, double value)
-            {
-                double const epsilon = std::abs(a(i, j) - b(i, j));
-                if (epsilon > delta)
-                {
-                    recurse = true;
-                }
-            });
-        }
-
-        return recurse;
     }
 
     template <typename Matrix>
@@ -112,7 +113,6 @@ public:
 
             inflation(C_f, m_inflation);
 
-
             // Normalise Columns
             Vector w = columnSum<Matrix>(C_f);
             w.forElements([](double& x) { x = 1. / x; });
@@ -125,12 +125,14 @@ public:
                 });
             }
 
-            recurse = equals(C_f, C_i, m_delta);
+            recurse = !equals(C_f, C_i, m_delta);
 
             if (recurse)
             {
                 C_i = C_f;
             }
+
+            std::cout << "Iteration" << std::endl;
 
         } while (recurse);
 
@@ -144,7 +146,7 @@ public:
 
         // Transpose because A(i, j) is the weight from j to i to generate the Markov Matrix
         // Maybe not needed? Is that only a detail?!
-        // A.transpose();
+        //A.transpose();
         
         Vector v = columnSum<CSRMatrix>(A);
 

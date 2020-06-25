@@ -197,6 +197,28 @@ TEST_F(CommunityGTest, mlc_columnNormalize)
     EXPECT_FLOAT_EQ(0.4, m(3,3));
 }
 
+TEST_F(CommunityGTest, mlc_equals)
+{
+    std::vector<Triplet> triplets = {
+        {0,0,0.01}, {0,1,0.02}, {0,2,0.02}, 
+        {1,0,0.02}, {1,1,0.06}, 
+        {2,0,0.03},             {2,2,0.08}, {2,3,0.1}, 
+                                {3,2,0.01}, {3,3,0.03}};
+
+    CSRMatrix a(4, triplets);
+
+
+    std::vector<Triplet> triplets2 = {
+        {0,0,0.02}, {0,1,0.03}, {0,2,0.03}, 
+        {1,0,0.03}, {1,1,0.07}, 
+        {2,0,0.04},             {2,2,0.09}, {2,3,0.11}, 
+                                {3,2,0.02}, {3,3,0.04}};
+
+    CSRMatrix b(4, triplets2);
+
+    EXPECT_TRUE(equals(a, b, 0.2));
+}
+
 TEST_F(CommunityGTest, mlc_jazz)
 {
     METISGraphReader reader;
@@ -207,6 +229,7 @@ TEST_F(CommunityGTest, mlc_jazz)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
+    std::cout << "number of nodes: " << G.numberOfNodes() << std::endl;
     std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
     std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
