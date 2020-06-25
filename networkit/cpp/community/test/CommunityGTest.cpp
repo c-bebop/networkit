@@ -220,6 +220,32 @@ TEST_F(CommunityGTest, mlc_equals)
     EXPECT_FALSE(equals(a, b, 0.01));
 }
 
+TEST_F(CommunityGTest, mlc_inflate)
+{
+    std::vector<Triplet> triplets = {
+        {0,0,1.}, {0,1,2.}, {0,2,2.}, 
+        {1,0,2.}, {1,1,6.}, 
+        {2,0,3.},           {2,2,8.}, {2,3,1.}, 
+                            {3,2,1.}, {3,3,3.}};
+
+    CSRMatrix m(4, triplets);
+    inflate(m, 2.);
+
+    EXPECT_FLOAT_EQ(1., m(0,0));
+    EXPECT_FLOAT_EQ(4., m(1,0));
+    EXPECT_FLOAT_EQ(9., m(2,0));
+
+    EXPECT_FLOAT_EQ(4., m(0,1));
+    EXPECT_FLOAT_EQ(36., m(1,1));
+
+    EXPECT_FLOAT_EQ(4., m(0,2));
+    EXPECT_FLOAT_EQ(64., m(2,2));
+    EXPECT_FLOAT_EQ(1., m(3,2));
+
+    EXPECT_FLOAT_EQ(1., m(2,3));
+    EXPECT_FLOAT_EQ(9., m(3,3));
+}
+
 TEST_F(CommunityGTest, mlc_jazz)
 {
     METISGraphReader reader;

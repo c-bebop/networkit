@@ -63,10 +63,30 @@ bool equals(Matrix const& a, Matrix const& b, double delta)
     return equal;
 }
 
+template <typename Matrix>
+void inflate(Matrix& m, double r)
+{
+    for (size_t i = 0; i < m.numberOfRows(); ++i)
+    {
+        m.forElementsInRow(i, [&](index j, double value) {
+            m.setValue(i, j, std::pow(value, r));
+        });
+    }
+}
+
+template <typename Matrix>
+void expand(Matrix& m, unsigned e)
+{
+    for (unsigned i = 0; i < e; ++i)
+    {
+        m = m * m;
+    }
+}
+
 class MCL : public CommunityDetectionAlgorithm {
 
 public:
-    MCL(const Graph& G, double delta = 0.001, size_t expansion = 3, double inflation = 1.5)
+    MCL(const Graph& G, double delta = 0.001, size_t expansion = 3, double inflation = 1.2)
     : CommunityDetectionAlgorithm(G)
     , m_delta(delta)
     , m_expansion(expansion)
@@ -79,18 +99,7 @@ public:
 
         if (m_inflation <= 1.)
         {
-            throw std::runtime_error("Inflaction factor must be greater 1.");
-        }
-    }
-
-    template <typename Matrix>
-    void inflation(Matrix& m, double r)
-    {
-        for (size_t i = 0; i < m.numberOfRows(); ++i)
-        {
-            m.forElementsInRow(i, [&](index j, double value) {
-                m.setValue(i, j, value * r);
-            });
+            throw std::runtime_error("Inflation factor must be greater 1.");
         }
     }
 
@@ -100,18 +109,12 @@ public:
         bool recurse = false;
 
         Matrix C_i = M;
-        Matrix C_f;
+        Matrix C_f = C_i;
         do
         {
             // Actual algorithm
-            // expansion
-            C_f = C_i * C_i;
-            for (size_t i = 1; i < e; ++i)
-            {
-                C_f = C_f * C_f;
-            }
-
-            inflation(C_f, m_inflation);
+            expand(C_f, e);
+            inflate(C_f, r);
             normalize(C_f);
 
             recurse = !equals(C_f, C_i, m_delta);
@@ -202,8 +205,8 @@ public:
 
 private:
     double m_delta{0.01};
-    size_t m_expansion{2};
-    double m_inflation{1.01};
+    unsigned m_expansion{0};
+    double m_inflation{0.};
 };
 
 }
