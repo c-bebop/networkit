@@ -112,18 +112,7 @@ public:
             }
 
             inflation(C_f, m_inflation);
-
-            // Normalise Columns
-            Vector w = columnSum<Matrix>(C_f);
-            w.forElements([](double& x) { x = 1. / x; });
-
-            for (size_t i = 0; i < C_f.numberOfRows(); ++i)
-            {
-                C_f.forNonZeroElementsInRow(i, [&](index j, double value)
-                {
-                    C_f.setValue(i, j, C_f(i, j) * w[j]);
-                });
-            }
+            normalize(C_f);
 
             recurse = !equals(C_f, C_i, m_delta);
 
@@ -181,7 +170,6 @@ public:
         {
             if (C_f(i, i) > m_delta)
             {
-                std::cout << "C_f(i, i) > m_delta" << std::endl;
                 C_f.forElementsInRow(i, [&](size_t j, double x)
                 {
                     if (x > m_delta && i != j)

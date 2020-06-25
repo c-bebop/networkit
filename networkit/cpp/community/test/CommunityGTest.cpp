@@ -217,6 +217,7 @@ TEST_F(CommunityGTest, mlc_equals)
     CSRMatrix b(4, triplets2);
 
     EXPECT_TRUE(equals(a, b, 0.2));
+    EXPECT_FALSE(equals(a, b, 0.01));
 }
 
 TEST_F(CommunityGTest, mlc_jazz)
