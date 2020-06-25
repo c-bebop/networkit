@@ -180,8 +180,8 @@ TEST_F(CommunityGTest, mlc_jazz)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
-    DEBUG("number of clusters: " , zeta.numberOfSubsets());
-    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
+    std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
@@ -195,8 +195,8 @@ TEST_F(CommunityGTest, mlc_celegans_metabolic)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
-    DEBUG("number of clusters: " , zeta.numberOfSubsets());
-    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
+    std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
@@ -211,8 +211,8 @@ TEST_F(CommunityGTest, mlc_email)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
-    DEBUG("number of clusters: " , zeta.numberOfSubsets());
-    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
+    std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
@@ -226,8 +226,8 @@ TEST_F(CommunityGTest, mlc_power)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
-    DEBUG("number of clusters: " , zeta.numberOfSubsets());
-    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
+    std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
@@ -241,8 +241,8 @@ TEST_F(CommunityGTest, mlc_PGPgiantcompo)
     mcl.run();
     Partition zeta = mcl.getPartition();
 
-    DEBUG("number of clusters: " , zeta.numberOfSubsets());
-    DEBUG("modularity: " , modularity.getQuality(zeta, G));
+    std::cout << "number of clusters: " << zeta.numberOfSubsets() << std::endl;
+    std::cout << "modularity: " << modularity.getQuality(zeta, G) << std::endl;
     EXPECT_TRUE(GraphClusteringTools::isProperClustering(G, zeta));
 }
 
