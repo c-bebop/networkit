@@ -68,14 +68,17 @@ public:
     }
 
     template<typename Matrix>
-    Matrix mcl(Matrix const& C_i, size_t e, double r)
+    Matrix mcl(Matrix& C_i, size_t e, double r)
     {
         bool recurse = false;
+
+        DenseMatrix C_f;
+
         do
         {
             // Actual algorithm
             // expansion
-            DenseMatrix C_f = C_i * C_i;
+            C_f = C_i * C_i;
             for (size_t i = 1; i < e; ++i)
             {
                 C_f = C_f * C_f;
@@ -103,9 +106,15 @@ public:
             }
 
             recurse = equals(C_f, C_i, m_delta);
+
+            if (recurse)
+            {
+                C_i = C_f;
+            }
+
         } while (recurse);
 
-        return std::move(C_i);
+        return std::move(C_f);
     }
 
     void run() override
