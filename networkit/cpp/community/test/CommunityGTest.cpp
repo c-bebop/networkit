@@ -39,7 +39,7 @@
 #include <networkit/generators/ClusteredRandomGraphGenerator.hpp>
 #include <networkit/generators/ErdosRenyiGenerator.hpp>
 #include <networkit/community/CoverF1Similarity.hpp>
-#include <networkit/community/MLC.hpp>
+#include <networkit/community/MCL.hpp>
 
 #include <tlx/unused.hpp>
 
@@ -170,7 +170,7 @@ TEST_F(CommunityGTest, testLouvainParallel2Naive) {
 }
 */
 
-TEST_F(CommunityGTest, testMCL)
+TEST_F(CommunityGTest, testMLC)
 {
     METISGraphReader reader;
     Modularity modularity;
