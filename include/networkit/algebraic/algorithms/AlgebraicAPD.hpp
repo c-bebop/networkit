@@ -18,6 +18,11 @@ public:
     : n(graph.numberOfNodes())
     {
         std::vector<double> entries(n * n, 0.);
+
+        // for (Edge const& edge : Graph::EdgeRange(graph))
+        // {
+        //     entries[edge.u * n + edge.v] = 1.;
+        // }
         
         for (node i = 0; i < n; ++i) // TODO: Use GraphIterators
         {
@@ -85,13 +90,9 @@ private:
                 if (i != j)
                 {
                     entries[i * n + j] = [&]() {
-                        if (s(i, j) >= (d_(i, j) * z(i, i)))
-                        {
-                            return 2 * d_(i, j);
-                        }
+                        bool const even = s(i, j) >= (d_(i, j) * z(i, i));
 
-                        // if (s(i, j) < (d_(i, j) * z(i, i)))
-                        return 2 * d_(i, j) - 1.;
+                        return even ? 2 * d_(i, j) : 2 * d_(i, j) - 1.;
                     }();
                 }
             }
